@@ -110,6 +110,10 @@ void execute_internal_commands(char *input_string)
     {
         printf("%d\n",getpid());
     }
+    else if (strcmp(input_string, "echo $?") == 0)
+    {
+        printf("%d\n", last_exit_status);
+    }
     else if (strcmp(input_string, "echo $SHELL") == 0)
     {
         printf("%s\n", getenv("SHELL"));
@@ -117,6 +121,18 @@ void execute_internal_commands(char *input_string)
  
 }
 
+/*******************************************************************************************************************************************************************
+ * Function Name : execute_external_commands
+ * Description   : Executes external commands entered by the user.
+ *                 - Splits the input command using '|' to detect pipelines.
+ *                 - If no pipe is present, executes the command normally using fork() and execvp().
+ *                 - If pipes are present, creates the required number of pipes.
+ *                 - Forks multiple child processes for each command in the pipeline.
+ *                 - Redirects input/output using dup2() to establish pipe communication.
+ *                 - Closes unused pipe ends and waits for all child processes to complete.
+ * Input         : input_string – command line entered by the user
+ * Return        : None (void)
+ *******************************************************************************************************************************************************************/
 void execute_external_commands(char *input_string)
 {
     char *cmd_list[20];

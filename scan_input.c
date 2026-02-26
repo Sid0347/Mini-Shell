@@ -2,7 +2,6 @@
 
 char *exte_cmds[152];
 pid_t pid;
-int status;
 
 void scan_input(char *prompt, char *input_string)
 {
@@ -16,6 +15,10 @@ void scan_input(char *prompt, char *input_string)
 		scanf("%[^\n]", input_string);
 		getchar();	
 
+		// if (strcmp(input_string, "print") == 0)
+		// {
+		// 	print_list(head);
+		// }
 		/* Check input have 'PS1=' or not.*/
 		if (strncmp(input_string, "PS1=", 4) == 0)
 		{
@@ -51,6 +54,15 @@ void scan_input(char *prompt, char *input_string)
 				if(pid > 0)
 				{
 					waitpid(pid, &status, WUNTRACED);
+
+					if (WIFEXITED(status))
+					{
+						last_exit_status = WEXITSTATUS(status);
+					}
+					else if (WIFSIGNALED(status))
+					{
+						last_exit_status = 128 + WTERMSIG(status);
+					}
 				}
 				if (pid == 0)
 				{
