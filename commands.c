@@ -106,6 +106,14 @@ void execute_internal_commands(char *input_string)
         else
             perror("getcwd");
     }
+    else if (strcmp(input_string, "echo $$") == 0)
+    {
+        printf("%d\n",getpid());
+    }
+    else if (strcmp(input_string, "echo $SHELL") == 0)
+    {
+        printf("%s\n", getenv("SHELL"));
+    }
  
 }
 
