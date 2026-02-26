@@ -118,6 +118,17 @@ void execute_internal_commands(char *input_string)
     {
         printf("%s\n", getenv("SHELL"));
     }
+    else if (strcmp(input_string, "jobs") == 0)
+    {
+        job_t *temp = job_list;
+
+        while (temp != NULL)
+        {
+            printf("[%d]  Stopped    %s\n", temp->job_id, temp->command);
+
+            temp = temp->next;
+        }
+    }
  
 }
 
