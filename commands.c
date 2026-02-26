@@ -129,6 +129,28 @@ void execute_internal_commands(char *input_string)
             temp = temp->next;
         }
     }
+    // Bring the most recently stopped job to foreground and resume its execution
+    else if (strcmp(input_string, "fg") == 0)
+    {
+        if (job_list == NULL)
+        {
+            printf("No jobs\n");
+            return;
+        }
+
+        job_t *temp = job_list;
+        job_list = job_list->next;
+
+        kill(temp->pid, SIGCONT);
+        int status;
+        waitpid(temp->pid, &status, WUNTRACED);
+
+        free(temp;)
+    }
+    else if (strcmp(input_string, "bg") == 0)
+    {
+        
+    }
  
 }
 
