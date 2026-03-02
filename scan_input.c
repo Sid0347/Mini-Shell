@@ -7,6 +7,7 @@ void scan_input(char *prompt, char *input_string)
 	/* Signal Handling at the input waiting time.*/
 	signal(SIGINT, signal_handler);	  /* ctrl + c */
 	signal(SIGTSTP, signal_handler); /* ctrl + z */
+	signal(SIGCHLD, signal_handler); 
 	while (1)
 	{
 		printf("%s", prompt);
@@ -44,10 +45,17 @@ void scan_input(char *prompt, char *input_string)
 			{
 				// printf("External cmd\n");
 				pid = fork();
-
+				
+				if (pid < 0)
+				{
+					perror("fork");
+					return;
+				}
 				if(pid > 0)
 				{
-					waitpid(pid, &status, WUNTRACED);
+					foreground_pid = pid;
+    				waitpid(pid, &status, WUNTRACED);
+    				foreground_pid = -1;
 
 					if (WIFSTOPPED(status))
 					{
