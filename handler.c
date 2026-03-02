@@ -13,21 +13,45 @@ void signal_handler(int signum)
 {
     if (signum == SIGINT)
     {
-        if (pid == 0)
-            printf("%s", prompt);
+        if (foreground_pid > 0)
+        {
+            kill(foreground_pid, SIGINT);
+        }
+        else
+        {
+            write(STDOUT_FILENO, "\n", 1);
+            write(STDOUT_FILENO, prompt, strlen(prompt));
+        }
     }
     if (signum == SIGTSTP)
     {
-        if (pid == 0)
-            printf("%s", prompt);
-        else if (pid != 0)
+        if (foreground_pid > 0)
         {
-            insert_at_first(pid);
+            kill(foreground_pid, SIGTSTP);
+        }
+        else
+        {
+            write(STDOUT_FILENO, "\n", 1);
+            write(STDOUT_FILENO, prompt, strlen(prompt));
         }
     }
     if (signum == SIGCHLD)
     {
-        waitpid(-1, &status, WNOHANG);
+        int status;
+        while ((child_pid = waitpid(-1, &status, WNOHANG)) > 0)
+        {
+            job_t *temp = job_list;
+
+            while (temp != NULL)
+            {
+                if (temp->pid == child_pid)
+                {
+                    temp->state = DONE;   // mark as finished
+                    break;
+                }
+                temp = temp->next;
+            }
+        }
     }
 }
 
@@ -40,13 +64,20 @@ void signal_handler(int signum)
  * Input         : proc_pid – Process ID of the child process
  * Return        : None (void)
  *******************************************************************************************************************************************************************/
-void insert_at_first(pid_t proc_pid)
+void insert_at_first(pid_t pid, char *cmd)
 {
-    struct node *newnode = malloc(sizeof(struct node));
+    job_t *new = malloc(sizeof(job_t));
+    if (new == NULL)
+    {
+        perror("malloc");
+        return;
+    }
+    new->job_id = job_count++;
+    new->pid = pid;
+    strcpy(new->command, cmd);
 
-    newnode->proc_pid = proc_pid;
-    strcpy(newnode->cmd, input_string);
-    newnode->next = head;
-    head = newnode;
+    new->state = STOPPED;
+
+    new->next = job_list;
+    job_list = new;
 }
-
