@@ -1,6 +1,14 @@
 #include "header.h"
 
-
+/*******************************************************************************************************************************************************************
+ * Function Name : scan_input
+ * Description   : Continuously reads commands from the user prompt, identifies built-in and external commands,
+ *                 and executes them. Handles signal management (SIGINT, SIGTSTP, SIGCHLD) and job control.
+ *                 Supports prompt customization via PS1.
+ * Input         : prompt – The shell prompt string to display
+ *                 input_string – Buffer to store user-entered command
+ * Return        : None (void)
+ *******************************************************************************************************************************************************************/
 void scan_input(char *prompt, char *input_string)
 {
 	extract_external_commands(exte_cmds);
@@ -88,6 +96,3 @@ void scan_input(char *prompt, char *input_string)
 		}
 	}
 }
-
-
-
