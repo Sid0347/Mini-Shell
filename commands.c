@@ -121,11 +121,30 @@ void execute_internal_commands(char *input_string)
     else if (strcmp(input_string, "jobs") == 0)
     {
         job_t *temp = job_list;
+        job_t *prev = NULL;
 
         while (temp != NULL)
-        {
-            printf("[%d]  Stopped    %s\n", temp->job_id, temp->command);
+        {   /* Message will print according to process state.*/
+            if (temp->state == STOPPED)
+                printf("[%d]  Stopped    %s\n", temp->job_id, temp->command);
+            else if (temp->state == RUNNING)
+                printf("[%d]  Running    %s\n", temp->job_id, temp->command);
+            else if (temp->state == DONE)
+            {
+                printf("[%d]  Done       %s\n", temp->job_id, temp->command);
 
+                    // REMOVE DONE JOB
+                if (prev == NULL)
+                    job_list = temp->next;
+                else
+                    prev->next = temp->next;
+
+                job_t *to_free = temp;
+                temp = temp->next;
+                free(to_free);
+                continue;
+            }
+            prev = temp;
             temp = temp->next;
         }
     }
@@ -144,12 +163,29 @@ void execute_internal_commands(char *input_string)
         kill(temp->pid, SIGCONT);
         int status;
         waitpid(temp->pid, &status, WUNTRACED);
-
-        free(temp;)
+        
+		if (WIFSTOPPED(status))
+		{
+			printf("\n");            
+		    insert_at_first(temp->pid, temp->command);      // ADD JOB HERE (If user stop again).
+		}
+        free(temp);
     }
     else if (strcmp(input_string, "bg") == 0)
     {
-        
+        if (job_list == NULL)
+        {
+            printf("No jobs\n");
+            return;
+        }
+
+        job_t *temp = job_list;   
+
+        temp->state = RUNNING;
+        // Send continue signal
+        kill(temp->pid, SIGCONT);
+
+        printf("[%d] %s &\n", temp->pid, temp->command);
     }
  
 }
@@ -169,9 +205,10 @@ void execute_internal_commands(char *input_string)
 void execute_external_commands(char *input_string)
 {
     char *cmd_list[20];
+    char cmd_string[50];
     int cmd_count = 0;
-
-    cmd_list[cmd_count] = strtok(input_string, "|");
+    strcpy(cmd_string, input_string);
+    cmd_list[cmd_count] = strtok(cmd_string, "|");
 
     while (cmd_list[cmd_count] != NULL)
     {
@@ -185,24 +222,28 @@ void execute_external_commands(char *input_string)
         char *args[20];
 
         while (*cmd_list[0] == ' ')
-        cmd_list[0]++;
+            cmd_list[0]++;
 
         split_arguments(cmd_list[0], args);
 
-        pid_t pid = fork();
+        // pid_t pid = fork();
 
-        if (pid == 0)
-        {
+        // if (pid == 0)   // Child process
+        // {
             execvp(args[0], args);
-            perror("Execution failed");
+            perror("Execution failed");  // Only runs if execvp fails
             exit(EXIT_FAILURE);
-        }
-        else
-        {
-            wait(NULL);
-        }
+        // }
+        // else if (pid > 0)  // Parent process
+        // {
+        //     wait(NULL);
+        // }
+        // else
+        // {
+        //     perror("Fork failed");
+        // }
 
-        return;
+        // return;
     }
 
     /* Create required pipes (number of commands - 1) */
@@ -287,4 +328,5 @@ void split_arguments(char *cmd, char **args)
         i++;
         args[i] = strtok(NULL, " ");
     }
+    args[i] = NULL;
 }
