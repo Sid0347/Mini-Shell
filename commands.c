@@ -1,4 +1,4 @@
-#include "header.h"
+#include "minishell.h"
 
 char *builtins[] = {"echo", "printf", "read", "cd", "pwd", "pushd", "popd", "dirs", "let", "eval",
 						"set", "unset", "export", "declare", "typeset", "readonly", "getopts", "source",
@@ -226,24 +226,9 @@ void execute_external_commands(char *input_string)
 
         split_arguments(cmd_list[0], args);
 
-        // pid_t pid = fork();
-
-        // if (pid == 0)   // Child process
-        // {
-            execvp(args[0], args);
-            perror("Execution failed");  // Only runs if execvp fails
-            exit(EXIT_FAILURE);
-        // }
-        // else if (pid > 0)  // Parent process
-        // {
-        //     wait(NULL);
-        // }
-        // else
-        // {
-        //     perror("Fork failed");
-        // }
-
-        // return;
+        execvp(args[0], args);
+        perror("Execution failed");  // Only runs if execvp fails
+        exit(EXIT_FAILURE);
     }
 
     /* Create required pipes (number of commands - 1) */

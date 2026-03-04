@@ -23,7 +23,7 @@
  *                            stopped/terminated jobs, and maintains last exit status ($?).
  *
 ###############################################################################################*/
-#include "header.h"
+#include "minishell.h"
 
 /* All global variables.*/
 char prompt[25] = "minishell$ ";

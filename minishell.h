@@ -1,5 +1,5 @@
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef MINISHELL_H
+#define MINISHELL_H
 
 #include <stdio.h>
 #include <string.h>
